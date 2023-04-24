@@ -1,0 +1,7 @@
+{
+  "api_invoke_url": {
+    "sensitive": false,
+    "type": "string",
+    "value": "https://hhnh0tvooc.execute-api.us-west-2.amazonaws.com/dev"
+  }
+}

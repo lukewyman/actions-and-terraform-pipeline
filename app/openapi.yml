@@ -1,0 +1,177 @@
+openapi: 3.0.3
+
+info:
+  title: DynamoDB to Opensearch
+  description: An API for CRUD operations on a DynamoDB table
+  version: "1.0.0"
+
+paths:
+  /books:
+    post: 
+      x-amazon-apigateway-integration:
+        type: aws
+        uri: "arn:aws:apigateway:${aws_region}:dynamodb:action/PutItem"
+        httpMethod: POST 
+        passthroughBehavior: when_no_match
+        credentials: ${apigw_role_arn}
+        requestTemplates:
+          application/json: |
+            #set($inputRoot = $input.path('$'))
+            {
+              "TableName": "${books_table_name}",
+              "Item": {
+                "book_id": { "S": "$context.requestId" },
+                "title": { "S": "$inputRoot.title" },
+                "author": { "S": "$inputRoot.author" }
+              }
+            }
+        responses:
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: |
+                {
+                  "message": "New book created.",
+                  "book_id": "$context.requestId"
+                }
+      tags:
+        - book 
+      summary: add a new bookupdate
+      operationId: addBook
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookWithId'
+        '405':
+          description: Invalid Input
+      requestBody:
+        $ref: '#/components/requestBodies/Book'
+  /books/{bookId}:
+    get:
+      x-amazon-apigateway-integration: 
+        type: aws 
+        uri: "arn:aws:apigateway:${aws_region}:dynamodb:action/GetItem"
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        credentials: ${apigw_role_arn}
+        requestTemplates:
+          application/json: |
+            {
+              "TableName": "${books_table_name}",
+              "Key": {
+                "book_id": { "S": "$input.params('bookId')" }
+              }
+            }
+        responses: 
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: |
+                #set($inputRoot = $input.path('$'))
+                {
+                  "book_id": "$inputRoot.Item.book_id.S",
+                  "title": "$inputRoot.Item.title.S",
+                  "author": "$inputRoot.Item.author.S"
+                }
+      responses:
+        '200': 
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookWithId'
+    put:
+      x-amazon-apigateway-integration:
+        type: aws
+        uri: "arn:aws:apigateway:${aws_region}:dynamodb:action/UpdateItem"
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        credentials: ${apigw_role_arn}
+        requestTemplates:
+          application/json: |
+            #set($inputRoot = $input.path('$'))
+            {
+              "TableName": "${books_table_name}",
+              "Key": {
+                "book_id": { "S": "$input.params('bookId')" }
+              },
+              "UpdateExpression": "set title = :title, author = :author",
+              "ExpressionAttributeValues": {
+                ":title": { "S": "$inputRoot.title"},
+                ":author": {"S": "$inputRoot.author"}
+              },
+              "ReturnValues": "ALL_NEW"
+            }
+        responses: 
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: |
+                #set($inputRoot = $input.path('$'))
+                {
+                  "book_id": "$inputRoot.Attributes.book_id.S",
+                  "title": "$inputRoot.Attributes.title.S",
+                  "author": "$inputRoot.Attributes.author.S"
+                }
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookWithId'
+      requestBody:
+        $ref: '#/components/requestBodies/Book'
+    delete:
+      x-amazon-apigateway-integration:
+        type: aws
+        uri: "arn:aws:apigateway:${aws_region}:dynamodb:action/DeleteItem"
+        httpMethod: POST
+        passthroughBehavior: when_no_match
+        credentials: ${apigw_role_arn}
+        requestTemplates:
+          application/json: |
+            #set($inputRoot = $input.path('$'))
+            {
+              "TableName": "${books_table_name}",
+              "Key": {
+                "book_id": { "S": "$input.params('bookId')" }
+              }
+            }
+        responses: 
+          default:
+            statusCode: 204
+      responses:
+        '204':
+          description: successful operation          
+components:
+  schemas:
+    Book: 
+      type: object 
+      required:
+        - title
+        - author 
+      properties:
+        title:
+          type: string 
+        author:
+          type: string 
+    BookWithId:
+      allOf:
+        - $ref: '#/components/schemas/Book'
+        - type: object 
+          required:
+            - bookId
+          properties:
+            BookId: 
+              type: string 
+              format: uuid
+  requestBodies:
+    Book: 
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Book'

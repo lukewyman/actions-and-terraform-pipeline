@@ -1,0 +1,48 @@
+{
+    "items": [
+        {
+            "book_id": {
+                "S": "16fc9742-21c5-48a1-a5c1-054aa65beb9a"
+            },
+            "title": {
+                "S": "title GET"
+            },
+            "author": {
+                "S": "author GET"
+            }
+        },
+        {
+            "book_id": {
+                "S": "221701b8-9569-4db2-a3c3-2f3ebc29d3bb"
+            },
+            "title": {
+                "S": "title GET ALL 1"
+            },
+            "author": {
+                "S": "author GET ALL 1"
+            }
+        },
+        {
+            "book_id": {
+                "S": "1bf0ef3c-c0e9-4422-9abf-9c6d438916f3"
+            },
+            "title": {
+                "S": "title GET ALL 2"
+            },
+            "author": {
+                "S": "author GET ALL 2"
+            }
+        },
+        {
+            "book_id": {
+                "S": "1befb57b-cb72-470b-844f-fda69f806d3b"
+            },
+            "title": {
+                "S": "title PUT"
+            },
+            "author": {
+                "S": "author PUT"
+            }
+        }
+    ]
+}

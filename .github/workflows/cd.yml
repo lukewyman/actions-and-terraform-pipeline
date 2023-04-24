@@ -1,0 +1,17 @@
+name: Continuous Deployment
+on: 
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+  release:
+    types:
+      - released
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: checkout
+      uses: actions/checkout@v1
