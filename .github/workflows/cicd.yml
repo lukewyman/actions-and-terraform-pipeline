@@ -54,7 +54,7 @@ jobs:
       - name: Terraform Apply - Test 
         id: apply_test 
         run: |
-          terraform workspace list
+          terraform workspace select test
           terraform apply -auto-approve -input=false 
 
       - name: Terraform outputs
