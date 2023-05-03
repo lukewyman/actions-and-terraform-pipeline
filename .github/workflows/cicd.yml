@@ -18,6 +18,8 @@ jobs:
         working-directory: app
     permissions:
       pull-requests: write 
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v3
