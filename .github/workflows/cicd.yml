@@ -59,7 +59,7 @@ jobs:
 
       - name: Terraform outputs
         id: outputs
-        run: terraform output -json > ../tests/infrastructure/tf-outputs.json
+        run: terraform-bin output -json > ../tests/infrastructure/tf-outputs.json
 
       - name: Setup Python 3.10
         id: python_setup
