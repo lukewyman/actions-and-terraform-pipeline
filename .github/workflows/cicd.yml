@@ -11,8 +11,7 @@ on:
 
 jobs:
   run_tests:
-    name: "Deploy to test"
-    if: github.event_name == 'pull_request'
+    name: "Deploy to test"    
     runs-on: ubuntu-22.04
     defaults:
       run:
