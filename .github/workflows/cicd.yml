@@ -70,22 +70,20 @@ jobs:
 
       - name: Install Python dependencies
         id: python_dependencies
-        working-directory: /   
+        working-directory: ./   
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt         
 
       - name: Seed the database
         id: seed_data 
-        working-directory: /
+        working-directory: ./
         run: python3 seed_data/load_seed_data.py seed-books.json actions-and-terraform-pipeline-test-books
 
       - name: Run Integration Tests
         id: integration_tests
-        working-directory: /
-        run: pytest
-
-      
+        working-directory: ./
+        run: pytest      
 
       - name: Teardown Test Environment
         id: teardown
