@@ -85,7 +85,6 @@ jobs:
         continue-on-error: true
         working-directory: ./
         run: |
-          cat ./tests/infrastructure/tf-outputs.json
           pytest      
 
       - name: Teardown Test Environment

@@ -2,6 +2,6 @@
   "api_invoke_url": {
     "sensitive": false,
     "type": "string",
-    "value": "https://3vawf7ksy6.execute-api.us-west-2.amazonaws.com/dev"
+    "value": "https://nrmvmpqrv0.execute-api.us-west-2.amazonaws.com/test"
   }
 }
