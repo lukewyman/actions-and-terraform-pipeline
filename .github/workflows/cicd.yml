@@ -43,9 +43,9 @@ jobs:
       - name: Terraform Init - Test
         id: init_test
         run: |
-          terraform init
           export TF_WORKSPACE=test
-          terraform workspace select test || terraform workspace new test
+          terraform init
+          terraform workspace select $TF_WORKSPACE || terraform workspace new $TF_WORKSPACE
           terraform init
           
       - name: Terraform Validate
