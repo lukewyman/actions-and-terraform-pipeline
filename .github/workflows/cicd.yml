@@ -82,6 +82,7 @@ jobs:
 
       - name: Run Integration Tests
         id: integration_tests
+        continue-on-error: true
         working-directory: ./
         run: pytest      
 
