@@ -63,4 +63,6 @@ jobs:
 
       - name: Teardown Test Environment
         id: teardown
-        run: terraform destroy -auto-approve
+        run: |
+          terraform workspace select test
+          terraform destroy -auto-approve
