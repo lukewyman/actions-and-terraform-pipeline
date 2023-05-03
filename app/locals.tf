@@ -1,3 +1,3 @@
 locals {
-  app_prefix = "pipeline-example-"
+  app_prefix = "actions-and-terraform-pipeline-"
 }
