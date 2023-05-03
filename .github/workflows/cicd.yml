@@ -43,6 +43,7 @@ jobs:
       - name: Terraform Init - Test
         id: init_test
         run: |
+          terraform init
           terraform workspace new test
           terraform init
           
