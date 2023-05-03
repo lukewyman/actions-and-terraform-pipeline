@@ -49,3 +49,15 @@ jobs:
       - name: Terraform Validate
         id: validate 
         run: terraform validate -no-color
+
+      - name: Terraform Apply - Test 
+        id: apply_test 
+        run: terraform apply -auto-approve -input=false 
+
+      - name: Terraform outputs
+        id: outputs
+        run: terraform output -json > ../tests/infrastructure/tf-outputs.json
+
+      - name: Teardown Test Environment
+        id: teardown
+        run: terraform destroy -auto-approve
