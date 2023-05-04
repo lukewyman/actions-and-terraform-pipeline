@@ -8,7 +8,7 @@ on:
 
 jobs:
   test_and_deploy:
-    name: "Deploy to test"    
+    name: "Test & Deploy to UAT"    
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -145,4 +145,6 @@ jobs:
     
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false
+        run: |
+          terraform workspace select uat
+          terraform apply -auto-approve -input=false
