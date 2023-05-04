@@ -1,0 +1,148 @@
+name: CI/CD
+
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test_and_deploy:
+    name: "Deploy to test"    
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: app
+    permissions:
+      pull-requests: write 
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2 
+        with:
+          role-to-assume: arn:aws:iam::919980474747:role/github-actions
+          aws-region: us-west-2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2 
+        with: 
+          terraform_version: 1.3.7
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+  
+      - name: Terraform Format
+        id: fmt 
+        run: terraform fmt -check
+  
+      - name: Terraform Init - Test
+        id: init_test
+        run: |
+          export TF_WORKSPACE=test
+          terraform init
+          
+      - name: Terraform Validate
+        id: validate 
+        run: terraform validate -no-color
+
+      - name: Terraform Apply - Test 
+        id: apply_test 
+        if: github.event_name == 'pull_request'
+        run: |
+          terraform workspace select test
+          terraform apply -auto-approve -input=false 
+
+      - name: Terraform outputs
+        id: outputs
+        if: github.event_name == 'pull_request'
+        run: terraform-bin output -json > ../tests/infrastructure/tf-outputs.json
+
+      - name: Setup Python 3.10
+        id: python_setup
+        if: github.event_name == 'pull_request'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.6'
+          architecture: 'x64'
+
+      - name: Install Python dependencies
+        id: python_dependencies
+        if: github.event_name == 'pull_request'
+        working-directory: ./   
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt         
+
+      - name: Seed the database
+        id: seed_data 
+        if: github.event_name == 'pull_request'
+        working-directory: ./
+        run: python3 seed_data/load_seed_data.py seed-books.json actions-and-terraform-pipeline-test-books
+
+      - name: Run Integration Tests
+        id: integration_tests
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        working-directory: ./
+        run: pytest
+
+      - name: Teardown Test Environment
+        id: teardown
+        if: github.event_name == 'pull_request'
+        run: |
+          terraform workspace select test
+          terraform destroy -auto-approve
+
+      - name: Terraform Plan Status
+        if: steps.integration_tests.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Plan - UAT environment
+        id: terraform_plan
+        if: github.event_name == 'pull_request'
+        continue-on-error: true 
+        run: |
+          terraform workspace select uat
+          terraform plan -no-color -input=false
+
+      - name: Update Pull Request 
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env: 
+          PLAN: ${{ steps.terraform_plan.outputs.stdout }}
+          TEST: ${{ steps.integration_tests.outputs.stdout }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init_test.outcome }}
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Integration Tests \`${{ steps.integration_tests.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.terraform_plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.terraform_plan.outcome == 'failure'
+        run: exit 1
+    
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false

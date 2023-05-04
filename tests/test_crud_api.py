@@ -8,7 +8,7 @@ import os
 def books_api_endpoint():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     full_path = os.path.join(dir_path, 'infrastructure/tf-outputs.json')
-    with open(full_path) as outputs_file:
+    with open(full_path, 'r') as outputs_file:
         outputs = json.load(outputs_file)
 
     endpoint = outputs['api_invoke_url']['value']

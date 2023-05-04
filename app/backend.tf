@@ -12,7 +12,7 @@ terraform {
     organization = "spikes"
 
     workspaces {
-      prefix = "pipeline-example-"
+      prefix = "actions-and-terraform-pipeline-"
     }
   }
 }
