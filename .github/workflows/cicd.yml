@@ -95,6 +95,10 @@ jobs:
           terraform workspace select test
           terraform destroy -auto-approve
 
+      - name: Terraform Plan Status
+        if: steps.integration_tests.outcome == 'failure'
+        run: exit 1
+
       - name: Terraform Plan - UAT environment
         id: terraform_plan
         if: github.event_name == 'pull_request'
@@ -117,14 +121,6 @@ jobs:
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
             #### Integration Tests \`${{ steps.integration_tests.outcome }}\`
             #### Terraform Plan 📖\`${{ steps.terraform_plan.outcome }}\`
-
-            <details><summary>Show Integration Test Results</summary>
-
-            \`\`\` \n
-            ${process.env.TEST}
-            \`\`\`
-
-            </details>
 
             <details><summary>Show Plan</summary>
 
