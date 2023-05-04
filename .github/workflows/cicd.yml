@@ -98,10 +98,10 @@ jobs:
       - name: Terraform Plan - UAT environment
         id: terraform_plan
         if: github.event_name == 'pull_request'
+        continue-on-error: true 
         run: |
           terraform workspace select uat
           terraform plan -no-color -input=false
-          continue-on-error: true 
 
       - name: Update Pull Request 
         uses: actions/github-script@v6
