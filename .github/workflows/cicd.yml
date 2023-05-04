@@ -129,7 +129,7 @@ jobs:
             <details><summary>Show Plan</summary>
 
             \`\`\`terraform\n
-            ${process.env.TEST}
+            ${process.env.PLAN}
             \`\`\`
 
             </details>
